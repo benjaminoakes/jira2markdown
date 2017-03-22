@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Convert Jira markup to Markdown</title>
+  <meta charset="utf-8" />
+
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Convert Jira markup to Markdown</h1>
+
+  <p>Know Markdown better than Jira markup?  Need to paste something from Jira into GitHub?  This should help.</p>
+
+  <p>Not all markup is supported (pull requests welcome).  Type in either box.</p>
+
+  <h2>Jira Markup</h2>
+
+  <textarea id="jira-markup" rows="18" cols="80"></textarea>
+
+  <h2>Markdown</h2>
+
+  <textarea id="markdown" rows="18" cols="80"></textarea>
+
+<script>
+  Convert = {
+    toMarkdown: function (jiraMarkup) {
+      return jiraMarkup.
+        replace(/{{/g, '`').
+        replace(/}}/g, '`').
+        replace(/\*{1}([^ \n]+)\*{1}/g, '**$1**')
+    },
+
+    toJiraMarkup: function (markdown) {
+      return markdown.
+        replace(/`(.*)`/g, '{{$1}}').
+        replace(/\*{2}([^ \n]+)\*{2}/g, '*$1*')
+    }
+  };
+
+  ConverterView = (function () {
+    function ConverterView(jiraMarkupEl, markdownEl) {
+      this.jiraMarkupEl = jiraMarkupEl;
+      this.markdownEl = markdownEl;
+    }
+
+    ConverterView.prototype.render = function render() {
+      var that = this;
+
+      this.jiraMarkupEl.onkeyup = function () { renderMarkdown.apply(that) };
+      this.markdownEl.onkeyup = function () { renderJiraMarkup.apply(that) };
+    }
+
+    function renderMarkdown() {
+      var jiraMarkup, markdown;
+
+      jiraMarkup = this.jiraMarkupEl.value;
+      markdown = Convert.toMarkdown(jiraMarkup);
+
+      this.markdownEl.value = markdown;
+    }
+
+    function renderJiraMarkup() {
+      var jiraMarkup, markdown;
+
+      markdown = this.markdownEl.value;
+      jiraMarkup = Convert.toJiraMarkup(markdown);
+
+      this.jiraMarkupEl.value = jiraMarkup;
+    }
+
+    return ConverterView;
+  }());
+
+  var view = new ConverterView(document.getElementById('jira-markup'),
+                               document.getElementById('markdown'));
+  view.render();
+</script>
+</body>
+</html>
